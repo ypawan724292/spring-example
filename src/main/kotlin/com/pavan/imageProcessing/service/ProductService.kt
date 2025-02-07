@@ -5,14 +5,21 @@ import com.pavan.imageProcessing.mappers.toProduct
 import com.pavan.imageProcessing.mappers.toProductDto
 import com.pavan.imageProcessing.models.ProductDto
 import com.pavan.imageProcessing.repository.ProductRepository
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.data.domain.Pageable
 
 @Service
-class ProductService(private val productRepository: ProductRepository) {
+class ProductService(
+    private val productRepository: ProductRepository,
+    private val fileStorageService: FileStorageService
+) {
 
-    fun createProduct(productDto: ProductDto) {
+    fun createProduct(productDto: ProductDto, file: MultipartFile) {
+        val imageUrl = fileStorageService.storeFile(file)
         if (productRepository.existsById(productDto.id).not()) {
-            productRepository.save(productDto.toProduct())
+            productRepository.save(productDto.toProduct(imageUrl))
         } else {
             throw ProductNotFoundException("Product with id ${productDto.id} already exist")
         }
@@ -20,8 +27,9 @@ class ProductService(private val productRepository: ProductRepository) {
 
     fun updateProduct(id: Long, updatedProduct: ProductDto) {
         if (productRepository.existsById(id)) {
+            val imageUrl = productRepository.findById(id).orElse(null)?.imageUrl ?: ""
             val product = updatedProduct.copy(id = id)
-            productRepository.save(product.toProduct())
+            productRepository.save(product.toProduct(imageUrl))
         } else {
             throw ProductNotFoundException("Product with id $id not found")
         }
@@ -50,6 +58,16 @@ class ProductService(private val productRepository: ProductRepository) {
 
     fun deleteAll() {
         productRepository.deleteAll()
+    }
+
+    fun getAllProducts(pageable: Pageable): Page<ProductDto> {
+        val page = productRepository.findAll(pageable).map {
+            it.toProductDto()
+        }
+        if (page.isEmpty) {
+            throw ProductNotFoundException("Products not found")
+        }
+        return page
     }
 
 }

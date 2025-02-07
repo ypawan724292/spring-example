@@ -37,4 +37,13 @@ class GlobalExceptionHandler {
         )
         return ResponseEntity(error, HttpStatus.BAD_REQUEST)
     }
+
+    @ExceptionHandler(AuthenticationExceptionHandler::class)
+    fun handleAuthenticationException(ex: AuthenticationExceptionHandler): ResponseEntity<Error<String>> {
+        val error = Error(
+            message = ex.localizedMessage ?: "Auth failed",
+            meta = mapOf("timestamp" to System.currentTimeMillis())
+        )
+        return ResponseEntity(error, HttpStatus.BAD_REQUEST)
+    }
 }

@@ -11,16 +11,24 @@ data class Product(
     val id: Long,
     @field:NotBlank(message = "Product name cannot be null")
     val name: String,
-    val price: Double
+    val price: Double,
+    val description: String,
+    val imageUrl: String,
+    val date: String,
+    val rating: Int
 ) {
-    constructor() : this(0, "", 0.0)
+    constructor() : this(0, "", 0.0, "", "", "", 0)
 }
 
 
 data class ProductDto(
     val id: Long,
     val name: String,
-    val price: Double
+    val price: Double,
+    val description: String,
+    val imageUrl: String,
+    val date: String,
+    val rating: Int
 )
 
 

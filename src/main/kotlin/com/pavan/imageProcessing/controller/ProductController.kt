@@ -3,9 +3,12 @@ package com.pavan.imageProcessing.controller
 import com.pavan.imageProcessing.models.ApiResponse
 import com.pavan.imageProcessing.models.ProductDto
 import com.pavan.imageProcessing.service.ProductService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -13,8 +16,11 @@ class ProductController(private val productService: ProductService) {
 
     // Create a new product
     @PostMapping
-    fun createProduct(@RequestBody product: ProductDto): ResponseEntity<ApiResponse<String>> {
-        productService.createProduct(product)
+    fun createProduct(
+        @ModelAttribute product: ProductDto,
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<ApiResponse<String>> {
+        productService.createProduct(product, file)
         val response = ApiResponse(
             data = "Product created successfully",
             meta = mapOf("timestamp" to System.currentTimeMillis())
@@ -77,5 +83,13 @@ class ProductController(private val productService: ProductService) {
         return ResponseEntity.ok(response)
     }
 
-
+    @GetMapping("/page")
+    fun getAllProductsPaged(pageable: Pageable): ResponseEntity<ApiResponse<Page<ProductDto>>> {
+        val list = productService.getAllProducts(pageable)
+        val response = ApiResponse(
+            data = list,
+            meta = mapOf("timestamp" to System.currentTimeMillis(), "total" to list.size)
+        )
+        return ResponseEntity.ok(response)
+    }
 }

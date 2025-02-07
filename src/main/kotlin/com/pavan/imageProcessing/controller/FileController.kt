@@ -4,6 +4,7 @@ import com.pavan.imageProcessing.models.ApiResponse
 import com.pavan.imageProcessing.service.FileStorageService
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -29,8 +30,13 @@ class FileController(
         return ResponseEntity(response, HttpStatus.CREATED)
     }
 
-    @GetMapping("/{filename}")
+
+    @GetMapping("/{fileName}")
     fun getFile(@PathVariable fileName: String): ResponseEntity<Resource> {
-        val resource  = fileStorageService.
+        val resource = fileStorageService.loadFileAsResource(fileName)
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_JPEG)
+            .body(resource)
     }
+
 }
